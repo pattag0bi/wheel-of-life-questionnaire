@@ -1,0 +1,1044 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wheel of Life</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap">
+<style>
+@property --c1{syntax:'<color>';inherits:true;initial-value:#4f46e5}
+@property --c2{syntax:'<color>';inherits:true;initial-value:#06b6d4}
+:root{--glow:rgba(255,255,255,.25);--ink:#fff;--card:rgba(10,12,30,.45);--serif:'Fraunces',Georgia,serif;--sans:'Inter',system-ui,sans-serif}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;overflow-x:hidden}
+body{margin:0;overflow-x:hidden;min-height:100vh;min-height:100dvh;font-family:var(--sans);color:var(--ink);background:linear-gradient(135deg,var(--c1),var(--c2)) fixed;transition:--c1 .8s ease,--c2 .8s ease}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.12;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+#app{position:relative;max-width:640px;margin:0 auto;padding:16px;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+#app.wide{max-width:960px}
+.top{display:flex;align-items:center;gap:12px;padding:8px 0 16px}
+.bar{flex:1;height:8px;border-radius:99px;background:rgba(255,255,255,.2);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:#fff;border-radius:99px;transition:width .4s ease}
+.pct{font-size:13px;font-weight:600;min-width:40px;text-align:right}
+.segs{display:flex;gap:4px;margin-bottom:16px}
+.segs i{flex:1;height:4px;border-radius:9px;background:rgba(255,255,255,.22)}
+.segs i.done{background:#fff}.segs i.cur{background:rgba(255,255,255,.7)}
+.card{margin:auto 0;width:100%;background:var(--card);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:24px;padding:28px 24px;border:2px solid var(--glow);box-shadow:0 10px 50px -10px var(--glow),0 8px 30px rgba(0,0,0,.25);transition:border-color .3s,box-shadow .3s;animation:enter .25s ease-out}
+@keyframes enter{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;opacity:.85;margin:0 0 10px}
+h1,h2{font-family:var(--serif);margin:0 0 10px;line-height:1.1}
+h1{font-size:clamp(34px,8vw,48px)}h2{font-size:clamp(28px,6.5vw,38px)}
+h3{font-family:var(--serif);margin:0 0 6px;font-size:20px}
+p{line-height:1.5;margin:0 0 14px;opacity:.95}
+.sub{font-size:17px;opacity:.9}
+.emoji{font-size:56px;margin-bottom:8px;line-height:1}
+.tip{font-size:14px;background:rgba(255,255,255,.12);border-radius:14px;padding:12px 14px;margin:16px 0}
+.btn{font:inherit;font-weight:600;font-size:16px;color:#111;background:#fff;border:0;border-radius:14px;padding:14px 22px;cursor:pointer;transition:transform .15s,opacity .2s}
+.btn:hover{transform:translateY(-1px)}.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn.ghost{background:rgba(255,255,255,.14);color:#fff}
+.btn.block{display:block;width:100%;text-align:left;margin-bottom:10px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px}
+.row .grow{flex:1}
+:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.val{font-family:var(--serif);font-size:64px;font-weight:700;text-align:center;line-height:1;margin:20px 0 14px;transition:color .2s}
+.pills{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+@media(min-width:420px){.pills{grid-template-columns:repeat(10,1fr)}}
+.pill{font:inherit;font-weight:600;font-size:18px;min-height:48px;border-radius:12px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.1);color:#fff;cursor:pointer;transition:transform .15s,background .15s}
+.pill:hover{background:rgba(255,255,255,.22)}
+.pill.sel{color:#111;border-color:#fff;background:var(--pc);animation:bounce .3s}
+@keyframes bounce{50%{transform:scale(1.15)}}
+.slider{width:100%;margin:22px 0 4px;-webkit-appearance:none;appearance:none;height:10px;border-radius:99px;background:linear-gradient(90deg,var(--sc) var(--pct),rgba(255,255,255,.25) var(--pct))}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid var(--sc);cursor:pointer}
+.slider::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--sc);cursor:pointer}
+.scale{display:flex;justify-content:space-between;font-size:12px;opacity:.8}
+details{margin-top:14px;font-size:14px}summary{cursor:pointer;opacity:.9}
+input[type=text],input[type=number]{font:inherit;color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.35);border-radius:10px;padding:10px 12px;width:100%;margin-top:8px}
+input[type=number]{width:80px;margin:0 0 0 8px}
+.linkbtn{background:none;border:0;color:#fff;font:inherit;text-decoration:underline;cursor:pointer;opacity:.85;padding:8px 0}
+.wlist .grp{margin:18px 0 6px;font-weight:600}
+.wrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.12);font-size:15px}
+.seg{display:flex;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.4);flex:none}
+.seg button{font:inherit;color:#fff;background:none;border:0;padding:8px 14px;cursor:pointer}
+.seg button[aria-pressed=true]{background:#fff;color:#111;font-weight:600}
+.chips{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}
+.chip{font:inherit;font-size:17px;font-weight:600;color:#fff;border:2px solid rgba(255,255,255,.4);background:rgba(255,255,255,.1);border-radius:16px;padding:18px 10px;cursor:pointer}
+.chip[aria-pressed=true]{background:#fff;color:#111}
+/* results */
+.res h1{margin-top:12px}
+.wheelwrap{display:flex;justify-content:center;margin:10px 0}
+canvas#wheel{max-width:100%}
+.snap{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:14px 0}
+.snap div{background:rgba(255,255,255,.08);border-radius:14px;padding:12px}
+.snap small{display:block;opacity:.7;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+.snap b{font-family:var(--serif);font-size:22px}
+.panel{background:rgba(255,255,255,.07);border-radius:20px;padding:18px;margin:14px 0}
+.acard{border-radius:18px;margin:10px 0;background:rgba(255,255,255,.07);overflow:hidden;border-left:6px solid var(--a)}
+.acard>button{all:unset;display:flex;box-sizing:border-box;width:100%;padding:14px 16px;gap:12px;align-items:center;cursor:pointer;flex-wrap:wrap}
+.acard .nm{font-family:var(--serif);font-size:20px;flex:1;min-width:110px}
+.stat{font-size:13px;opacity:.85}.stat b{font-size:16px;opacity:1}
+.gapchip{font-size:13px;font-weight:600;padding:3px 10px;border-radius:99px}
+.gapchip.flag{background:#fbbf24;color:#111}.gapchip.ok{background:rgba(255,255,255,.15)}
+.abody{padding:0 16px 16px;font-size:14px}
+.abar{display:grid;grid-template-columns:minmax(110px,1fr) 2fr 34px;gap:8px;align-items:center;margin:6px 0}
+.abar i{display:block;height:8px;border-radius:9px;background:var(--bc)}
+.abar .tr{background:rgba(255,255,255,.12);border-radius:9px}
+.note{opacity:.75;font-size:12px;grid-column:1/-1;margin:-2px 0 4px}
+.badge{display:inline-block;background:#fbbf24;color:#111;border-radius:99px;padding:1px 9px;font-size:12px;font-weight:700;margin-left:6px}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:9}
+.sr{position:absolute;left:-9999px}
+@media(prefers-reduced-motion:reduce){body{transition:none}.card{animation:none}.pill.sel{animation:none}*{transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<canvas id="confetti"></canvas>
+<div class="sr" aria-live="polite" id="live"></div>
+<script>
+// Generated from wheel_of_life_shareable.xlsx (Scores tab). 8 areas, 81 aspects.
+const WHEEL_AREAS = [
+  {
+    "id": "career",
+    "name": "Career",
+    "boundary": "Pay and money stress go in Finance. Energy left after work goes in Health. Only score whether the workload itself is sustainable.",
+    "aspects": [
+      {
+        "id": "career-1",
+        "group": "The work",
+        "aspect": "Engagement",
+        "prompt": "Absorption, interest, variety in the work itself"
+      },
+      {
+        "id": "career-2",
+        "group": "The work",
+        "aspect": "Autonomy and ownership",
+        "prompt": "How much you decide vs execute"
+      },
+      {
+        "id": "career-3",
+        "group": "The work",
+        "aspect": "Load",
+        "prompt": "Sustainability of intensity and deadline pressure (10 = comfortably sustainable)"
+      },
+      {
+        "id": "career-4",
+        "group": "Growth",
+        "aspect": "Learning rate",
+        "prompt": "New things per month, stretch vs comfort"
+      },
+      {
+        "id": "career-5",
+        "group": "Growth",
+        "aspect": "Transferable skills",
+        "prompt": "What survives a job switch"
+      },
+      {
+        "id": "career-6",
+        "group": "Growth",
+        "aspect": "Feedback and mentorship",
+        "prompt": "Honest, specific input from someone senior"
+      },
+      {
+        "id": "career-7",
+        "group": "Position",
+        "aspect": "Trajectory and optionality",
+        "prompt": "Next step clarity, timeline, ability to leave and land well"
+      },
+      {
+        "id": "career-8",
+        "group": "Position",
+        "aspect": "Standing",
+        "prompt": "Reputation, visibility with leadership, credit for your work"
+      },
+      {
+        "id": "career-9",
+        "group": "Environment",
+        "aspect": "People and culture",
+        "prompt": "Manager quality, peers, psychological safety, network the job gives you"
+      },
+      {
+        "id": "career-10",
+        "group": "Fit",
+        "aspect": "Values and long-horizon fit",
+        "prompt": "Match with what you care about, and fit with your 5 to 10 year picture"
+      }
+    ]
+  },
+  {
+    "id": "finance",
+    "name": "Finance",
+    "boundary": "Job stability and how much you like the work stay in Career. Only pay level and money stress count here.",
+    "aspects": [
+      {
+        "id": "finance-1",
+        "group": "Security",
+        "aspect": "Buffer",
+        "prompt": "Months of essentials covered if income stopped"
+      },
+      {
+        "id": "finance-2",
+        "group": "Security",
+        "aspect": "Debt load",
+        "prompt": "How much any debt weighs on you (10 = no debt worry)"
+      },
+      {
+        "id": "finance-3",
+        "group": "Security",
+        "aspect": "Protection",
+        "prompt": "Health and term cover, dependents covered"
+      },
+      {
+        "id": "finance-4",
+        "group": "Control",
+        "aspect": "Visibility",
+        "prompt": "You know roughly where money goes"
+      },
+      {
+        "id": "finance-5",
+        "group": "Control",
+        "aspect": "Spending habits",
+        "prompt": "Aligned with what you value, no regret purchases"
+      },
+      {
+        "id": "finance-6",
+        "group": "Control",
+        "aspect": "Background stress",
+        "prompt": "Whether money shows up as low-level anxiety (10 = none)"
+      },
+      {
+        "id": "finance-7",
+        "group": "Growth",
+        "aspect": "Savings and investing",
+        "prompt": "Rate and consistency"
+      },
+      {
+        "id": "finance-8",
+        "group": "Growth",
+        "aspect": "Net worth direction",
+        "prompt": "Rising at a pace you are happy with"
+      },
+      {
+        "id": "finance-9",
+        "group": "Growth",
+        "aspect": "Income growth",
+        "prompt": "Room to earn more over the next few years"
+      },
+      {
+        "id": "finance-10",
+        "group": "Goals and optionality",
+        "aspect": "Goal progress",
+        "prompt": "Specific things you are saving toward"
+      },
+      {
+        "id": "finance-11",
+        "group": "Goals and optionality",
+        "aspect": "Risk capacity",
+        "prompt": "Could you take a pay cut or a leap without panic"
+      }
+    ]
+  },
+  {
+    "id": "health",
+    "name": "Health",
+    "boundary": "Workload pressure stays in Career. Only how well you recover from it counts here.",
+    "aspects": [
+      {
+        "id": "health-1",
+        "group": "Recovery",
+        "aspect": "Sleep quantity",
+        "prompt": "Hours per night"
+      },
+      {
+        "id": "health-2",
+        "group": "Recovery",
+        "aspect": "Sleep quality and consistency",
+        "prompt": "Regular timing, waking rested"
+      },
+      {
+        "id": "health-3",
+        "group": "Recovery",
+        "aspect": "Stress recovery",
+        "prompt": "How fast you come down after a hard day"
+      },
+      {
+        "id": "health-4",
+        "group": "Movement",
+        "aspect": "Exercise frequency",
+        "prompt": "Deliberate sessions per week"
+      },
+      {
+        "id": "health-5",
+        "group": "Movement",
+        "aspect": "Strength and fitness",
+        "prompt": "Can you do what you want to do physically"
+      },
+      {
+        "id": "health-6",
+        "group": "Movement",
+        "aspect": "Daily movement",
+        "prompt": "Steps, time spent sitting"
+      },
+      {
+        "id": "health-7",
+        "group": "Fuel",
+        "aspect": "Eating",
+        "prompt": "Regularity and quality"
+      },
+      {
+        "id": "health-8",
+        "group": "Fuel",
+        "aspect": "Substances",
+        "prompt": "Alcohol, caffeine, smoking, screen time before bed (10 = healthy habits)"
+      },
+      {
+        "id": "health-9",
+        "group": "Body and upkeep",
+        "aspect": "Physical comfort",
+        "prompt": "Pain, niggles, chronic issues (10 = none)"
+      },
+      {
+        "id": "health-10",
+        "group": "Body and upkeep",
+        "aspect": "Preventive care",
+        "prompt": "Checkups, bloodwork, dental"
+      },
+      {
+        "id": "health-11",
+        "group": "Energy output",
+        "aspect": "Baseline energy and focus",
+        "prompt": "Through the whole day, not just mornings"
+      }
+    ]
+  },
+  {
+    "id": "family",
+    "name": "Family",
+    "boundary": "Money stress within the family goes in Finance. Only the relationship itself counts here.",
+    "aspects": [
+      {
+        "id": "family-1",
+        "group": "Connection",
+        "aspect": "Presence",
+        "prompt": "Time spent, and attention while you are there"
+      },
+      {
+        "id": "family-2",
+        "group": "Connection",
+        "aspect": "Communication",
+        "prompt": "Real conversation vs logistics"
+      },
+      {
+        "id": "family-3",
+        "group": "Connection",
+        "aspect": "Being known",
+        "prompt": "They understand your life as it is now"
+      },
+      {
+        "id": "family-4",
+        "group": "Relationship quality",
+        "aspect": "Key people",
+        "prompt": "Rate each important person, then enter the average"
+      },
+      {
+        "id": "family-5",
+        "group": "Relationship quality",
+        "aspect": "Unresolved tension",
+        "prompt": "Guilt, grudges, things left unsaid (10 = none)"
+      },
+      {
+        "id": "family-6",
+        "group": "Support",
+        "aspect": "Support flow",
+        "prompt": "What you give and what you receive"
+      },
+      {
+        "id": "family-7",
+        "group": "Support",
+        "aspect": "Obligations",
+        "prompt": "Caregiving load and expectations you carry (10 = comfortable)"
+      },
+      {
+        "id": "family-8",
+        "group": "Shared life",
+        "aspect": "Rituals",
+        "prompt": "Festivals, regular calls, shared meals"
+      },
+      {
+        "id": "family-9",
+        "group": "Shared life",
+        "aspect": "Distance",
+        "prompt": "How well you handle physical gaps"
+      }
+    ]
+  },
+  {
+    "id": "friends",
+    "name": "Friends",
+    "boundary": "Professional networking stays in Career. Only relationships that would survive a job change count here.",
+    "aspects": [
+      {
+        "id": "friends-1",
+        "group": "Depth",
+        "aspect": "Being known",
+        "prompt": "People who know the real you"
+      },
+      {
+        "id": "friends-2",
+        "group": "Depth",
+        "aspect": "Availability",
+        "prompt": "The 11pm call test"
+      },
+      {
+        "id": "friends-3",
+        "group": "Depth",
+        "aspect": "Reciprocity",
+        "prompt": "You show up, they show up"
+      },
+      {
+        "id": "friends-4",
+        "group": "Contact",
+        "aspect": "Frequency",
+        "prompt": "Actual meetups, not just chat threads"
+      },
+      {
+        "id": "friends-5",
+        "group": "Contact",
+        "aspect": "Ease",
+        "prompt": "Effortless vs constant scheduling labour"
+      },
+      {
+        "id": "friends-6",
+        "group": "Range",
+        "aspect": "Breadth",
+        "prompt": "More than one circle (old, new, work-adjacent)"
+      },
+      {
+        "id": "friends-7",
+        "group": "Range",
+        "aspect": "Belonging",
+        "prompt": "Groups or communities built on shared interests"
+      },
+      {
+        "id": "friends-8",
+        "group": "Overall feel",
+        "aspect": "Loneliness",
+        "prompt": "On an average week (10 = rarely lonely)"
+      }
+    ]
+  },
+  {
+    "id": "partner",
+    "name": "Partner",
+    "boundary": "Family expectations about marriage go in Family. Fill the branch that fits and leave the other blank. 'Both' always applies.",
+    "aspects": [
+      {
+        "id": "partner-1",
+        "group": "If partnered",
+        "aspect": "Connection",
+        "prompt": "Feeling close, not just co-existing"
+      },
+      {
+        "id": "partner-2",
+        "group": "If partnered",
+        "aspect": "Communication",
+        "prompt": "Honest, including the hard topics"
+      },
+      {
+        "id": "partner-3",
+        "group": "If partnered",
+        "aspect": "Affection and intimacy",
+        "prompt": "Physical and emotional"
+      },
+      {
+        "id": "partner-4",
+        "group": "If partnered",
+        "aspect": "Conflict handling",
+        "prompt": "How fights start, run, and repair"
+      },
+      {
+        "id": "partner-5",
+        "group": "If partnered",
+        "aspect": "Trust and security",
+        "prompt": "No background doubt"
+      },
+      {
+        "id": "partner-6",
+        "group": "If partnered",
+        "aspect": "Shared direction",
+        "prompt": "Aligned on goals, timelines, values"
+      },
+      {
+        "id": "partner-7",
+        "group": "If partnered",
+        "aspect": "Individual space",
+        "prompt": "Room to be your own person"
+      },
+      {
+        "id": "partner-8",
+        "group": "If partnered",
+        "aspect": "Fun together",
+        "prompt": "Enjoyment, not just logistics"
+      },
+      {
+        "id": "partner-9",
+        "group": "If single",
+        "aspect": "Contentment",
+        "prompt": "At peace with current status, not quietly bothered by it"
+      },
+      {
+        "id": "partner-10",
+        "group": "If single",
+        "aspect": "Clarity",
+        "prompt": "You know what you want in a partner"
+      },
+      {
+        "id": "partner-11",
+        "group": "If single",
+        "aspect": "Openness and effort",
+        "prompt": "Putting yourself in the way of meeting people"
+      },
+      {
+        "id": "partner-12",
+        "group": "If single",
+        "aspect": "Dating experience",
+        "prompt": "How it feels when you do it"
+      },
+      {
+        "id": "partner-13",
+        "group": "If single",
+        "aspect": "Solitude vs loneliness",
+        "prompt": "10 = solitude dominates, 1 = loneliness dominates"
+      },
+      {
+        "id": "partner-14",
+        "group": "Both",
+        "aspect": "Outlook",
+        "prompt": "How hopeful vs cynical you feel about relationships right now"
+      }
+    ]
+  },
+  {
+    "id": "growth",
+    "name": "Growth",
+    "boundary": "Side builds and skill-building count in Career if they are part of your career path. Only self-directed growth beyond that counts here.",
+    "aspects": [
+      {
+        "id": "growth-1",
+        "group": "Learning",
+        "aspect": "Self-directed learning",
+        "prompt": "Things you study outside job requirements"
+      },
+      {
+        "id": "growth-2",
+        "group": "Learning",
+        "aspect": "Curiosity",
+        "prompt": "Reading, new ideas, new fields"
+      },
+      {
+        "id": "growth-3",
+        "group": "Learning",
+        "aspect": "Creative output",
+        "prompt": "Making things, not just consuming"
+      },
+      {
+        "id": "growth-4",
+        "group": "Self",
+        "aspect": "Self-awareness",
+        "prompt": "Reflection, seeking honest feedback"
+      },
+      {
+        "id": "growth-5",
+        "group": "Self",
+        "aspect": "Emotional maturity",
+        "prompt": "Handling setbacks and conflict"
+      },
+      {
+        "id": "growth-6",
+        "group": "Self",
+        "aspect": "Direction",
+        "prompt": "Clarity on who you are becoming"
+      },
+      {
+        "id": "growth-7",
+        "group": "Action",
+        "aspect": "Challenge",
+        "prompt": "Doing things that scare you slightly"
+      },
+      {
+        "id": "growth-8",
+        "group": "Action",
+        "aspect": "Habits",
+        "prompt": "Are daily routines building the person you want to be"
+      },
+      {
+        "id": "growth-9",
+        "group": "Action",
+        "aspect": "Follow-through",
+        "prompt": "Keeping promises to yourself"
+      }
+    ]
+  },
+  {
+    "id": "fun",
+    "name": "Fun",
+    "boundary": "Exercise for fitness goes in Health. It counts here only if you do it for the enjoyment.",
+    "aspects": [
+      {
+        "id": "fun-1",
+        "group": "Play",
+        "aspect": "Pure play",
+        "prompt": "Things done with no output attached"
+      },
+      {
+        "id": "fun-2",
+        "group": "Play",
+        "aspect": "Recency",
+        "prompt": "How recently you did something purely for enjoyment"
+      },
+      {
+        "id": "fun-3",
+        "group": "Play",
+        "aspect": "Laughter",
+        "prompt": "How often, and with whom"
+      },
+      {
+        "id": "fun-4",
+        "group": "Activity",
+        "aspect": "Hobbies",
+        "prompt": "Active and ongoing, not abandoned"
+      },
+      {
+        "id": "fun-5",
+        "group": "Activity",
+        "aspect": "Novelty",
+        "prompt": "New places, foods, experiences"
+      },
+      {
+        "id": "fun-6",
+        "group": "Activity",
+        "aspect": "Mix",
+        "prompt": "Balance of social fun and solo fun"
+      },
+      {
+        "id": "fun-7",
+        "group": "Rest",
+        "aspect": "Real rest",
+        "prompt": "Downtime vs passive scrolling"
+      },
+      {
+        "id": "fun-8",
+        "group": "Rest",
+        "aspect": "Guilt",
+        "prompt": "Can you enjoy it without feeling you should be productive (10 = guilt free)"
+      },
+      {
+        "id": "fun-9",
+        "group": "Access",
+        "aspect": "Time and budget",
+        "prompt": "Enough of both to actually do it"
+      }
+    ]
+  }
+];
+
+
+// Gradient themes per area (stops darkened so white text keeps contrast on the frosted card)
+const AREA_THEME={
+  career:{c1:'#4f46e5',c2:'#0891b2',emoji:'💼'},
+  finance:{c1:'#047857',c2:'#65a30d',emoji:'💰'},
+  health:{c1:'#e11d48',c2:'#ea580c',emoji:'🫀'},
+  family:{c1:'#b45309',c2:'#d97706',emoji:'🏡'},
+  friends:{c1:'#7c3aed',c2:'#db2777',emoji:'🫶'},
+  partner:{c1:'#be123c',c2:'#9333ea',emoji:'💞'},
+  growth:{c1:'#0284c7',c2:'#16a34a',emoji:'🌱'},
+  fun:{c1:'#c2410c',c2:'#ca8a04',emoji:'🎈'}
+};
+const WIDE_THEME={c1:'#0b1020',c2:'#1b1440'};
+const WELCOME_THEME={c1:'#4f46e5',c2:'#db2777'};
+// Wheel wedge colours (brighter than UI stops, drawn on dark background)
+const WEDGE={career:['#818cf8','#22d3ee'],finance:['#34d399','#bef264'],health:['#fb7185','#fb923c'],family:['#fbbf24','#fde047'],friends:['#a78bfa','#f472b6'],partner:['#fb7185','#c084fc'],growth:['#38bdf8','#4ade80'],fun:['#fb923c','#facc15']};
+
+// ---------- state ----------
+const KEY='wol.v1';
+const fresh=()=>({version:1,partnerMode:null,answers:{},gut:{},priorities:[],threshold:1,cursor:'welcome',updatedAt:null});
+let state=load()||fresh();
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));return s&&s.version===1?s:null}catch(e){return null}}
+let saveT;function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{state.updatedAt=new Date().toISOString();localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}},300)}
+function clearSaved(){try{localStorage.removeItem(KEY)}catch(e){}}
+const A=id=>state.answers[id]||(state.answers[id]={score:undefined,weight:1,note:''});
+
+// ---------- data helpers ----------
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const activeAreas=()=>WHEEL_AREAS.filter(a=>!(a.id==='partner'&&state.partnerMode==='skip'));
+function aspectsFor(area){
+  if(area.id!=='partner')return area.aspects;
+  const m=state.partnerMode;
+  return area.aspects.filter(x=>x.group==='Both'||(m==='partnered'&&x.group==='If partnered')||(m==='single'&&x.group==='If single'));
+}
+const fmt=v=>Number.isInteger(v)?String(v):v.toFixed(1);
+const fmt2=v=>v===''||v==null?'–':(Math.round(v*100)/100).toFixed(1);
+
+// ---------- scoring (pure) ----------
+function computeArea(area,aspects,answers,gutVal,threshold){
+  const sc=aspects.filter(x=>{const a=answers[x.id];return a&&typeof a.score==='number'});
+  const scored=sc.length,total=aspects.length;
+  const simple=scored?sc.reduce((s,x)=>s+answers[x.id].score,0)/scored:'';
+  let weighted='';
+  if(scored){const w=sc.reduce((s,x)=>s+(answers[x.id].weight||1),0);weighted=sc.reduce((s,x)=>s+answers[x.id].score*(answers[x.id].weight||1),0)/w}
+  const gut=typeof gutVal==='number'?gutVal:'';
+  const gap=(weighted===''||gut==='')?'':gut-weighted;
+  let read;
+  if(weighted==='')read='Fill in aspect scores';
+  else if(gut==='')read='Enter gut score';
+  else if(Math.abs(gap)>=threshold-1e-9)read='Gut and aspects disagree: check which aspects pull it';
+  else read='Consistent';
+  const flagged=read.startsWith('Gut and');
+  let pulling=[];
+  if(flagged){
+    const s=[...sc].sort((a,b)=>answers[a.id].score-answers[b.id].score);
+    pulling=(gap>0?s:s.reverse()).slice(0,2).map(x=>x.aspect);
+  }
+  return{id:area.id,name:area.name,scored,total,simple,weighted,gut,gap,read,flagged,pulling};
+}
+function computeSnapshot(res){
+  const g=res.filter(r=>r.gut!=='');
+  if(!g.length)return{mean:'',high:'',low:'',spread:''};
+  const mx=Math.max(...g.map(r=>r.gut)),mn=Math.min(...g.map(r=>r.gut));
+  return{mean:g.reduce((s,r)=>s+r.gut,0)/g.length,high:g.find(r=>r.gut===mx).name,low:g.find(r=>r.gut===mn).name,spread:mx-mn};
+}
+const results=()=>activeAreas().map(a=>computeArea(a,aspectsFor(a),state.answers,state.gut[a.id],state.threshold));
+
+// ---------- colours ----------
+const STOPS=[[1,[239,68,68]],[5.5,[245,158,11]],[10,[34,197,94]]];
+function scoreColor(v){
+  v=Math.max(1,Math.min(10,v));
+  for(let i=0;i<2;i++){const[a,ca]=STOPS[i],[b,cb]=STOPS[i+1];
+    if(v<=b){const t=(v-a)/(b-a);return'rgb('+ca.map((c,k)=>Math.round(c+(cb[k]-c)*t)).join(',')+')'}}
+  return'rgb(34,197,94)';
+}
+function setTheme(t){const r=document.documentElement.style;r.setProperty('--c1',t.c1);r.setProperty('--c2',t.c2)}
+
+// ---------- steps ----------
+function buildSteps(){
+  const s=['welcome','partner'];
+  if(state.partnerMode===null){/* partner chosen before area steps */}
+  for(const a of activeAreas()){
+    s.push('intro:'+a.id);
+    aspectsFor(a).forEach(x=>s.push('q:'+x.id));
+    s.push('gut:'+a.id);
+  }
+  s.push('weights','priorities','results');
+  return s;
+}
+let steps=buildSteps(),idx=0;
+const areaOf=id=>WHEEL_AREAS.find(a=>a.id===id);
+const aspectById=id=>{for(const a of WHEEL_AREAS){const x=a.aspects.find(x=>x.id===id);if(x)return{asp:x,area:a}}};
+function go(i,dir){
+  steps=buildSteps();
+  idx=Math.max(0,Math.min(steps.length-1,i));
+  state.cursor=steps[idx];save();render();
+  window.scrollTo(0,0);
+}
+const next=()=>go(idx+1),back=()=>go(idx-1);
+function goKey(k){steps=buildSteps();const i=steps.indexOf(k);go(i<0?0:i)}
+
+// ---------- rendering ----------
+const app=document.getElementById('app');
+const qSteps=()=>steps.filter(s=>s.startsWith('q:')||s.startsWith('gut:'));
+function topBar(areaId){
+  const qs=qSteps(),pos=qs.indexOf(steps[idx]);
+  const done=pos<0?0:pos;const pct=Math.round(done/qs.length*100);
+  const act=activeAreas(),ci=act.findIndex(a=>a.id===areaId);
+  return`<div class="top"><button class="linkbtn" data-act="back" aria-label="Back">← Back</button><div class="bar"><i style="width:${pct}%"></i></div><span class="pct">${pct}%</span></div>
+  <div class="segs">${act.map((a,i)=>`<i class="${i<ci?'done':i===ci?'cur':''}"></i>`).join('')}</div>`;
+}
+function render(){
+  const key=steps[idx];
+  app.classList.toggle('wide',key==='results');
+  const[type,arg]=key.split(':');
+  if(type==='welcome')return rWelcome();
+  if(type==='partner'){setTheme(AREA_THEME.partner);return rPartner()}
+  if(type==='intro'){setTheme(AREA_THEME[arg]);return rIntro(areaOf(arg))}
+  if(type==='q'){const{asp,area}=aspectById(arg);setTheme(AREA_THEME[area.id]);return rQuestion(asp,area)}
+  if(type==='gut'){setTheme(AREA_THEME[arg]);return rGut(areaOf(arg))}
+  if(type==='weights'){setTheme(WELCOME_THEME);return rWeights()}
+  if(type==='priorities'){setTheme(WELCOME_THEME);return rPriorities()}
+  if(type==='results'){setTheme(WIDE_THEME);return rResults(true)}
+}
+function announce(t){document.getElementById('live').textContent=t}
+
+function rWelcome(){
+  setTheme(WELCOME_THEME);
+  const has=state.cursor&&state.cursor!=='welcome'&&Object.keys(state.answers).length+Object.keys(state.gut).length>0;
+  app.innerHTML=`<div class="card"><div class="emoji">🎡</div><p class="eyebrow">Self-assessment</p><h1>Wheel of Life</h1>
+  <p class="sub">Eight areas, about ${qSteps().length} quick taps, around 8–10 minutes. You finish with a wheel you can download.</p>
+  <ul><li>Score <b>satisfaction</b>, not effort or importance.</li><li><b>10 = best for you.</b> Negative wording is already flipped (e.g. background stress: 10 = none).</li><li>Go with your gut, under 10 seconds each. Score where you are <i>today</i>.</li></ul>
+  <p class="tip">Everything stays on this device. Nothing is sent anywhere.</p>
+  <div class="row">${has?`<button class="btn" data-act="resume">Resume where I left off</button><button class="btn ghost" data-act="restart">Start over</button>`:`<button class="btn" data-act="start">Start</button>`}</div></div>`;
+  app.querySelector('[data-act=start]')?.addEventListener('click',()=>go(1));
+  app.querySelector('[data-act=resume]')?.addEventListener('click',()=>goKey(state.cursor));
+  app.querySelector('[data-act=restart]')?.addEventListener('click',()=>{state=fresh();clearSaved();go(1)});
+}
+function rPartner(){
+  app.innerHTML=`<div class="top"><button class="linkbtn" data-act="back">← Back</button></div><div class="card"><div class="emoji">💞</div><p class="eyebrow">Before we begin</p><h2>Which describes you right now?</h2>
+  <p class="sub">This picks which Partner questions you see. You can skip the Partner area entirely.</p>
+  ${[['partnered','I\'m partnered'],['single','I\'m single'],['skip','Skip the Partner area']].map(([v,t])=>`<button class="btn block ${state.partnerMode===v?'':'ghost'}" data-mode="${v}">${t}</button>`).join('')}</div>`;
+  app.querySelector('[data-act=back]').onclick=back;
+  app.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{state.partnerMode=b.dataset.mode;save();next()});
+}
+function rIntro(area){
+  const n=aspectsFor(area).length,i=activeAreas().findIndex(a=>a.id===area.id);
+  app.innerHTML=`${topBar(area.id)}<div class="card"><div class="emoji">${AREA_THEME[area.id].emoji}</div><p class="eyebrow">Area ${i+1} of ${activeAreas().length}</p><h1>${esc(area.name)}</h1>
+  <p class="sub">${n} quick question${n>1?'s':''}, then one overall score.</p>
+  <div class="tip"><b>What doesn't count here:</b> ${esc(area.boundary)}</div>
+  <div class="row"><button class="btn" data-act="next">Let's go →</button></div></div>`;
+  bindNav();app.querySelector('[data-act=next]').onclick=next;announce(area.name+' area');
+}
+function scoreUI(){
+  return`<div class="val" id="val">–</div>
+  <div class="pills" role="radiogroup" aria-label="Score from 1 to 10">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button class="pill" role="radio" aria-checked="false" data-n="${n}" aria-label="${n}" style="--pc:${scoreColor(n)}">${n}</button>`).join('')}</div>
+  <input class="slider" id="sl" type="range" min="1" max="10" step="0.5" value="5.5" aria-label="Fine-tune score" style="--sc:#fff;--pct:0%">
+  <div class="scale"><span>1 · not at all</span><span>10 · best for me</span></div>`;
+}
+/* get/set value; commit(auto) advances */
+function bindScore(card,get,set,advance){
+  const val=card.querySelector('#val'),sl=card.querySelector('#sl'),pills=[...card.querySelectorAll('.pill')],nx=card.querySelector('[data-act=next]');
+  function ui(){
+    const v=get(),has=typeof v==='number';
+    const c=has?scoreColor(v):'#fff';
+    val.textContent=has?fmt(v):'–';val.style.color=has?c:'';
+    card.style.setProperty('--glow',has?c:'rgba(255,255,255,.25)');
+    sl.style.setProperty('--sc',c);sl.style.setProperty('--pct',has?((v-1)/9*100)+'%':'0%');
+    if(has)sl.value=v;
+    pills.forEach(p=>{const on=has&&+p.dataset.n===v;p.classList.toggle('sel',on);p.setAttribute('aria-checked',on)});
+    nx.disabled=!has;
+  }
+  let t;
+  pills.forEach(p=>p.onclick=()=>{set(+p.dataset.n);ui();clearTimeout(t);t=setTimeout(advance,350)});
+  sl.oninput=()=>{clearTimeout(t);set(+sl.value);ui()};
+  nx.onclick=advance;
+  card._nudge=d=>{clearTimeout(t);const v=get();set(Math.max(1,Math.min(10,(typeof v==='number'?v:5.5)+d)));ui()};
+  card._pick=n=>{set(n);ui();clearTimeout(t);t=setTimeout(advance,350)};
+  ui();
+}
+function rQuestion(asp,area){
+  const a=A(asp.id);
+  app.innerHTML=`${topBar(area.id)}<div class="card"><p class="eyebrow">${esc(area.name)} · ${esc(asp.group)}</p><h2>${esc(asp.aspect)}</h2><p class="sub">${esc(asp.prompt)}</p>
+  ${scoreUI()}
+  <details ${a.note?'open':''}><summary>Add a note</summary><input type="text" id="note" maxlength="200" placeholder="One line, optional" value="${esc(a.note)}"></details>
+  <div class="row"><button class="btn ghost" data-act="skip">Doesn't apply</button><span class="grow"></span><button class="btn" data-act="next">Next →</button></div></div>`;
+  bindNav();
+  const card=app.querySelector('.card');
+  bindScore(card,()=>a.score,v=>{a.score=v;save()},next);
+  card.querySelector('#note').oninput=e=>{a.note=e.target.value;save()};
+  card.querySelector('[data-act=skip]').onclick=()=>{a.score=null;save();next()};
+  announce(`${area.name}: ${asp.aspect}. Question ${qSteps().indexOf(steps[idx])+1} of ${qSteps().length}`);
+}
+function rGut(area){
+  app.innerHTML=`${topBar(area.id)}<div class="card"><p class="eyebrow">${esc(area.name)} · overall</p><h2>Overall, how satisfied are you with ${esc(area.name)}?</h2><p class="sub">Your gut feeling about the whole area, not an average of what you just answered.</p>
+  ${scoreUI()}
+  <div class="row"><button class="btn ghost" data-act="skip">Skip</button><span class="grow"></span><button class="btn" data-act="next">Next →</button></div></div>`;
+  bindNav();
+  const card=app.querySelector('.card');
+  const adv=()=>{confetti(AREA_THEME[area.id]);next()};
+  bindScore(card,()=>state.gut[area.id],v=>{state.gut[area.id]=v;save()},adv);
+  card.querySelector('[data-act=skip]').onclick=()=>{state.gut[area.id]=null;save();next()};
+  announce(`${area.name} overall score`);
+}
+function bindNav(){app.querySelector('[data-act=back]')?.addEventListener('click',back)}
+
+function rWeights(){
+  const body=activeAreas().map(a=>{
+    const rows=aspectsFor(a).filter(x=>typeof state.answers[x.id]?.score==='number');
+    if(!rows.length)return'';
+    return`<div class="grp">${AREA_THEME[a.id].emoji} ${esc(a.name)}</div>`+rows.map(x=>`<div class="wrow"><span>${esc(x.aspect)} <small style="opacity:.7">(${fmt(state.answers[x.id].score)})</small></span>
+    <div class="seg" role="group" aria-label="Weight for ${esc(x.aspect)}">${[1,2,3].map(w=>`<button data-id="${x.id}" data-w="${w}" aria-pressed="${(state.answers[x.id].weight||1)===w}">${w}</button>`).join('')}</div></div>`).join('');
+  }).join('');
+  app.innerHTML=`<div class="top"><button class="linkbtn" data-act="back">← Back</button></div><div class="card"><p class="eyebrow">Optional</p><h2>What matters most right now?</h2>
+  <p class="sub">Raise an aspect to 2 or 3 if it matters most to you. Default 1 means equal weight.</p>
+  <div class="row"><button class="btn" data-act="next">Skip, keep all equal →</button></div>
+  <div class="wlist">${body}</div><div class="row"><button class="btn" data-act="next">Continue →</button></div></div>`;
+  bindNav();
+  app.querySelectorAll('[data-act=next]').forEach(b=>b.onclick=next);
+  app.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{
+    A(b.dataset.id).weight=+b.dataset.w;save();
+    b.parentNode.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  });
+}
+function rPriorities(){
+  const act=activeAreas();
+  const draw=()=>{
+    app.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',state.priorities.includes(c.dataset.id)));
+    app.querySelector('[data-act=next]').disabled=state.priorities.length!==Math.min(2,act.length);
+  };
+  app.innerHTML=`<div class="top"><button class="linkbtn" data-act="back">← Back</button></div><div class="card"><p class="eyebrow">Last step</p><h2>Pick your top 2 priorities</h2>
+  <p class="sub">Which two areas deserve your attention first? A wheel with every area at 8 is neither realistic nor desirable.</p>
+  <div class="chips">${act.map(a=>`<button class="chip" data-id="${a.id}" aria-pressed="false">${AREA_THEME[a.id].emoji} ${esc(a.name)}</button>`).join('')}</div>
+  <div class="row"><span class="grow"></span><button class="btn" data-act="next">See my wheel →</button></div></div>`;
+  bindNav();
+  state.priorities=state.priorities.filter(p=>act.some(a=>a.id===p));
+  app.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{
+    const id=c.dataset.id,i=state.priorities.indexOf(id);
+    if(i>=0)state.priorities.splice(i,1);
+    else{state.priorities.push(id);if(state.priorities.length>2)state.priorities.shift()}
+    save();draw();
+  });
+  app.querySelector('[data-act=next]').onclick=()=>{confetti({c1:'#fff',c2:'#fbbf24'},160);next()};
+  draw();
+}
+
+// ---------- wheel drawing (shared by results + PNG) ----------
+function drawWheel(ctx,cx,cy,R,res,o){
+  o=o||{};const p=o.progress==null?1:o.progress,n=res.length,font=o.font||'Inter, sans-serif',lab=o.labelSize||14;
+  ctx.save();ctx.lineCap='round';
+  const slice=Math.PI*2/n,gap=0.03;
+  // grid rings
+  ctx.strokeStyle='rgba(255,255,255,.14)';ctx.lineWidth=1;
+  for(let k=2;k<=10;k+=2){ctx.beginPath();ctx.arc(cx,cy,R*k/10,0,Math.PI*2);ctx.stroke()}
+  ctx.fillStyle='rgba(255,255,255,.35)';ctx.font=`${lab-3}px ${font}`;ctx.textAlign='left';
+  for(let k=2;k<=10;k+=2)ctx.fillText(k,cx+4,cy-R*k/10+(lab-3));
+  res.forEach((r,i)=>{
+    const a0=-Math.PI/2+i*slice+gap,a1=-Math.PI/2+(i+1)*slice-gap;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,a0,a1);ctx.closePath();ctx.fillStyle='rgba(255,255,255,.04)';ctx.fill();
+    if(r.weighted!==''){
+      const rr=R*r.weighted/10*p,[c1,c2]=WEDGE[r.id];
+      const g=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(rr,1));g.addColorStop(0,c1);g.addColorStop(1,c2);
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,rr,a0,a1);ctx.closePath();ctx.fillStyle=g;ctx.globalAlpha=.92;ctx.fill();ctx.globalAlpha=1;
+    }
+    if(r.gut!==''){
+      ctx.beginPath();ctx.arc(cx,cy,R*r.gut/10*p,a0+.02,a1-.02);
+      ctx.setLineDash([6,5]);ctx.strokeStyle='#fff';ctx.lineWidth=o.gutWidth||2.5;ctx.stroke();ctx.setLineDash([]);
+    }
+    const am=(a0+a1)/2,lx=cx+Math.cos(am)*(R+lab*1.2),ly=cy+Math.sin(am)*(R+lab*1.2);
+    ctx.fillStyle='#fff';ctx.font=`600 ${lab}px ${font}`;
+    const c=Math.cos(am);ctx.textAlign=Math.abs(c)<.3?'center':c>0?'left':'right';ctx.textBaseline='middle';
+    ctx.fillText((state.priorities.includes(r.id)?'★ ':'')+r.name,lx,ly);
+  });
+  ctx.restore();
+}
+function sizeCanvas(cv,w,h){const d=window.devicePixelRatio||1;cv.width=w*d;cv.height=h*d;cv.style.width=w+'px';cv.style.height=h+'px';const c=cv.getContext('2d');c.setTransform(d,0,0,d,0,0);return c}
+
+// ---------- results ----------
+const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function rResults(animate){
+  const res=results(),snap=computeSnapshot(res),flagged=res.filter(r=>r.flagged).sort((a,b)=>Math.abs(b.gap)-Math.abs(a.gap));
+  const pr=state.priorities.map(id=>res.find(r=>r.id===id)?.name).filter(Boolean);
+  app.innerHTML=`<div class="res"><div class="top"><button class="linkbtn" data-act="back">← Back</button></div>
+  <p class="eyebrow">Your results</p><h1>Your Wheel of Life</h1>
+  <p class="sub">Wedges show your aspect average (weighted). The dashed line marks your gut score.${pr.length?` Priorities: ${pr.map(esc).join(' & ')} ★`:''}</p>
+  <div class="wheelwrap"><canvas id="wheel" role="img" aria-label="Wheel of life chart"></canvas></div>
+  <div class="snap"><div><small>Mean gut</small><b>${fmt2(snap.mean)}</b></div><div><small>Highest</small><b>${esc(snap.high)||'–'}</b></div><div><small>Lowest</small><b>${esc(snap.low)||'–'}</b></div><div><small>Spread</small><b>${fmt2(snap.spread)}</b></div></div>
+  <div class="panel"><h3>Biggest gaps</h3>
+  <label style="font-size:14px">Flag when gut and aspects differ by at least<input type="number" id="thr" min="0.5" max="3" step="0.5" value="${state.threshold}"></label>
+  ${flagged.length?flagged.map(r=>`<p style="margin-top:12px"><b>${esc(r.name)}</b> <span class="gapchip flag">${r.gap>0?'+':''}${r.gap.toFixed(1)}</span><br><span style="font-size:14px">Gut ${fmt2(r.gut)} vs aspects ${fmt2(r.weighted)}. ${r.gap>0?'Pulling it down':'Holding it up'}: ${r.pulling.map(esc).join(', ')}.</span></p>`).join(''):'<p style="margin-top:12px;font-size:14px">No gaps at this threshold. Your gut and your aspect scores agree.</p>'}</div>
+  <h3 style="margin-top:20px">By area</h3>
+  ${res.map(r=>cardHTML(r)).join('')}
+  <div class="row"><button class="btn" id="dl">⬇ Download PNG</button><button class="btn ghost" id="restart">Start over</button></div><p style="font-size:12px;opacity:.7;margin-top:18px">Scores are self-assessed satisfaction, 1 to 10.</p></div>`;
+  app.querySelector('[data-act=back]').onclick=back;
+  const cv=document.getElementById('wheel');
+  const W=Math.max(280,Math.min(560,(app.clientWidth||innerWidth)-32)),R=W/2-Math.max(60,W*.14);
+  const draw=p=>{const c=sizeCanvas(cv,W,W);c.clearRect(0,0,W,W);drawWheel(c,W/2,W/2,R,res,{progress:p,labelSize:W<420?12:15,font:'Inter, sans-serif'})};
+  if(animate&&!reduceMotion){const t0=performance.now();const f=t=>{const k=Math.min(1,(t-t0)/900);draw(1-Math.pow(1-k,3));if(k<1&&steps[idx]==='results')requestAnimationFrame(f)};requestAnimationFrame(f)}else draw(1);
+  cv._redraw=()=>draw(1);
+  document.getElementById('thr').onchange=e=>{state.threshold=Math.max(.5,Math.min(3,+e.target.value||1));save();rResults(false)};
+  app.querySelectorAll('.acard>button').forEach(b=>b.onclick=()=>{const body=b.nextElementSibling;body.hidden=!body.hidden;b.setAttribute('aria-expanded',!body.hidden)});
+  app.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>goKey('intro:'+b.dataset.edit));
+  document.getElementById('dl').onclick=exportPNG;
+  document.getElementById('restart').onclick=()=>{if(confirm('Start over? This clears all your answers.')){state=fresh();clearSaved();go(0)}};
+}
+function cardHTML(r){
+  const area=areaOf(r.id),th=WEDGE[r.id];
+  const rows=aspectsFor(area).map(x=>{const a=state.answers[x.id];
+    if(!a||typeof a.score!=='number')return`<div class="abar"><span style="opacity:.6">${esc(x.aspect)}</span><span style="opacity:.6;grid-column:2/4">skipped</span></div>`;
+    return`<div class="abar"><span>${esc(x.aspect)}${a.weight>1?`<span class="badge">×${a.weight}</span>`:''}</span><div class="tr"><i style="--bc:${scoreColor(a.score)};width:${a.score*10}%"></i></div><b>${fmt(a.score)}</b>${a.note?`<span class="note">“${esc(a.note)}”</span>`:''}</div>`}).join('');
+  return`<div class="acard" style="--a:${th[0]}"><button aria-expanded="false"><span class="nm">${AREA_THEME[r.id].emoji} ${esc(r.name)}${state.priorities.includes(r.id)?'<span class="badge">★ priority</span>':''}</span>
+  <span class="stat">Gut <b>${fmt2(r.gut)}</b></span><span class="stat">Aspects <b>${fmt2(r.weighted)}</b></span><span class="stat">Simple <b>${fmt2(r.simple)}</b></span><span class="stat">${r.scored}/${r.total}</span>
+  <span class="gapchip ${r.flagged?'flag':'ok'}">${r.gap===''?'–':(r.gap>0?'+':'')+r.gap.toFixed(1)}</span></button>
+  <div class="abody" hidden><p style="font-size:13px">${esc(r.read)}${r.flagged?` (${r.gap>0?'pulling down':'holding up'}: ${r.pulling.map(esc).join(', ')})`:''}</p>${rows}<button class="linkbtn" data-edit="${r.id}">Edit answers</button></div></div>`;
+}
+window.addEventListener('resize',()=>{const cv=document.getElementById('wheel');if(cv&&cv._redraw)cv._redraw()});
+
+// ---------- PNG export ----------
+async function exportPNG(){
+  const btn=document.getElementById('dl');btn.disabled=true;
+  try{
+    if(document.fonts){await Promise.all([document.fonts.load('700 64px Fraunces'),document.fonts.load('600 26px Inter'),document.fonts.load('400 26px Inter')].map(p=>p.catch(()=>{})));await document.fonts.ready}
+    const W=1080,H=1350,d=2,cv=document.createElement('canvas');cv.width=W*d;cv.height=H*d;
+    const c=cv.getContext('2d');c.scale(d,d);
+    const res=results(),snap=computeSnapshot(res);
+    c.fillStyle='#0b1020';c.fillRect(0,0,W,H);
+    res.forEach((r,i)=>{const a=i/res.length*Math.PI*2-Math.PI/2,x=W/2+Math.cos(a)*420,y=560+Math.sin(a)*420;
+      const g=c.createRadialGradient(x,y,0,x,y,380);g.addColorStop(0,WEDGE[r.id][0]+'55');g.addColorStop(1,WEDGE[r.id][0]+'00');c.fillStyle=g;c.fillRect(0,0,W,H)});
+    c.fillStyle='#fff';c.textAlign='center';c.textBaseline='alphabetic';
+    c.font='700 68px Fraunces, Georgia, serif';c.fillText('My Wheel of Life',W/2,110);
+    c.globalAlpha=.7;c.font='400 26px Inter, sans-serif';c.fillText(new Date().toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'}),W/2,155);c.globalAlpha=1;
+    drawWheel(c,W/2,560,330,res,{labelSize:28,font:'Inter, sans-serif',gutWidth:4});
+    // snapshot strip
+    const items=[['Mean gut',fmt2(snap.mean)],['Highest',snap.high||'–'],['Lowest',snap.low||'–'],['Spread',fmt2(snap.spread)]];
+    items.forEach(([l,v],i)=>{const x=60+i*240,w=225;c.fillStyle='rgba(255,255,255,.09)';rr(c,x,950,w,110,18);c.fill();
+      c.fillStyle='rgba(255,255,255,.65)';c.textAlign='left';c.font='500 20px Inter, sans-serif';c.fillText(l.toUpperCase(),x+18,990);
+      c.fillStyle='#fff';c.font='700 36px Fraunces, Georgia, serif';c.fillText(v,x+18,1037)});
+    const pr=state.priorities.map(id=>res.find(r=>r.id===id)?.name).filter(Boolean);
+    c.textAlign='left';c.fillStyle='#fbbf24';c.font='600 28px Inter, sans-serif';
+    c.fillText(pr.length?'★ Priorities: '+pr.join(' & '):'★ No priorities picked',60,1118);
+    const gaps=res.filter(r=>r.flagged).sort((a,b)=>Math.abs(b.gap)-Math.abs(a.gap)).slice(0,3);
+    c.fillStyle='#fff';c.font='400 24px Inter, sans-serif';
+    if(!gaps.length)c.fillText('Gut and aspect scores agree in every area.',60,1170);
+    gaps.forEach((r,i)=>c.fillText(fit(c,`${r.name}: gut ${fmt2(r.gut)} vs aspects ${fmt2(r.weighted)} (${r.gap>0?'+':''}${r.gap.toFixed(1)}), ${r.gap>0?'pulled down by':'held up by'} ${r.pulling.join(', ')}`,960),60,1168+i*38));
+    c.globalAlpha=.6;c.font='400 20px Inter, sans-serif';c.textAlign='center';c.fillText('Scores are self-assessed satisfaction, 1 to 10.',W/2,1318);c.globalAlpha=1;
+    const blob=await new Promise(r=>cv.toBlob(r,'image/png'));
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='wheel-of-life-'+new Date().toISOString().slice(0,10)+'.png';
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  }finally{btn.disabled=false}
+}
+function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
+function fit(c,t,w){if(c.measureText(t).width<=w)return t;while(t.length>1&&c.measureText(t+'…').width>w)t=t.slice(0,-1);return t+'…'}
+
+// ---------- confetti ----------
+function confetti(theme,count){
+  if(reduceMotion)return;
+  const cv=document.getElementById('confetti'),w=cv.width=innerWidth,h=cv.height=innerHeight,c=cv.getContext('2d');
+  const cols=['#fff',theme.c1,theme.c2,'#fde047'];
+  const ps=Array.from({length:count||80},()=>({x:w/2,y:h*.55,vx:(Math.random()-.5)*14,vy:-Math.random()*13-4,r:Math.random()*6+3,c:cols[Math.random()*cols.length|0],rot:Math.random()*6}));
+  const t0=performance.now();
+  (function f(t){const k=(t-t0)/1200;c.clearRect(0,0,w,h);if(k>=1)return;
+    ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.45;p.rot+=.2;c.save();c.translate(p.x,p.y);c.rotate(p.rot);c.globalAlpha=1-k;c.fillStyle=p.c;c.fillRect(-p.r,-p.r/2,p.r*2,p.r);c.restore()});
+    requestAnimationFrame(f)})(t0);
+}
+
+// ---------- keyboard ----------
+document.addEventListener('keydown',e=>{
+  const t=e.target;if(t.matches&&t.matches('input[type=text],textarea'))return;
+  const card=app.querySelector('.card');if(!card||!card._pick)return;
+  if(/^[0-9]$/.test(e.key)){e.preventDefault();card._pick(e.key==='0'?10:+e.key)}
+  else if((e.key==='ArrowRight'||e.key==='ArrowUp')&&!(t.type==='range')){e.preventDefault();card._nudge(.5)}
+  else if((e.key==='ArrowLeft'||e.key==='ArrowDown')&&!(t.type==='range')){e.preventDefault();card._nudge(-.5)}
+  else if(e.key==='Enter'){const nx=card.querySelector('[data-act=next]');if(nx&&!nx.disabled&&!(t.tagName==='BUTTON')){e.preventDefault();nx.click()}}
+});
+
+// ---------- self-test (?test) ----------
+function selfTest(){
+  const area={id:'t',name:'T'},asp=[1,2,3].map(i=>({id:'t'+i,aspect:'A'+i}));
+  const ans={t1:{score:6,weight:2},t2:{score:8,weight:1},t3:{score:null,weight:1}};
+  const r=computeArea(area,asp,ans,8,1);
+  console.assert(Math.abs(r.weighted-6.6667)<1e-3,'weighted 6@2+8@1 = 6.67',r.weighted);
+  console.assert(Math.abs(r.simple-7)<1e-9,'simple excludes skipped',r.simple);
+  console.assert(r.scored===2&&r.total===3,'scored/total');
+  console.assert(Math.abs(r.gap-1.3333)<1e-3&&r.flagged,'gap flagged at 1.33');
+  const r2=computeArea(area,asp,{t1:{score:7,weight:1},t2:{score:8,weight:1}},8.2,1);
+  console.assert(!r2.flagged&&r2.read==='Consistent','0.7 gap consistent',r2.read);
+  const r3=computeArea(area,asp,{t1:{score:7,weight:1}},8,1);
+  console.assert(r3.flagged,'gap exactly == threshold flags (>=)');
+  console.assert(computeArea(area,asp,{},5,1).read==='Fill in aspect scores','no scores');
+  console.assert(computeArea(area,asp,{t1:{score:7,weight:1}},undefined,1).read==='Enter gut score','no gut');
+  const s=computeSnapshot([{name:'a',gut:3},{name:'b',gut:9},{name:'c',gut:''}]);
+  console.assert(s.mean===6&&s.high==='b'&&s.low==='a'&&s.spread===6,'snapshot');
+  console.assert(WHEEL_AREAS.reduce((n,a)=>n+a.aspects.length,0)===81,'81 aspects');
+  console.log('self-test done');
+}
+if(location.search.includes('test'))selfTest();
+
+// ---------- init ----------
+render();
+</script>
+</body>
+</html>
